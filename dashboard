@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FARMER'S DASHBOARD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🌾 FARMER'S DASHBOARD</h1>
+            <p>Complete Farm Management & Crop Tracking System</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-container">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showSection('dashboard')">📊 Dashboard</button>
+                <button class="nav-tab" onclick="showSection('crops')">🌱 Crop Management</button>
+                <button class="nav-tab" onclick="showSection('inventory')">📦 Inventory</button>
+                <button class="nav-tab" onclick="showSection('notifications')" style="position: relative;">
+                    🔔 Notifications
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </button>
+                <button class="nav-tab" onclick="showSection('contacts')">📞 Contacts</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <div class="section-header">
+                <h2>📊 Farm Dashboard</h2>
+            </div>
+            <div class="section-content">
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <span class="dashboard-card-icon">🌾</span>
+                        <h3>Active Crops</h3>
+                        <span class="number" id="totalCrops">0</span>
+                        <span class="subtitle">Crop records</span>
+                    </div>
+                    <div class="dashboard-card">
+                        <span class="dashboard-card-icon">📦</span>
+                        <h3>Inventory Items</h3>
+                        <span class="number" id="totalStock">0</span>
+                        <span class="subtitle">Stock entries</span>
+                    </div>
+                    <div class="dashboard-card">
+                        <span class="dashboard-card-icon">🔔</span>
+                        <h3>New Notifications</h3>
+                        <span class="number" id="totalNotifications">0</span>
+                        <span class="subtitle">Unread messages</span>
+                    </div>
+                    <div class="dashboard-card">
+                        <span class="dashboard-card-icon">📈</span>
+                        <h3>Recent Activity</h3>
+                        <span id="recentActivity" style="font-size: 1.1rem; font-weight: 500; color: var(--medium-text);">No recent activity</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crop Management Section -->
+        <div id="crops" class="section">
+            <div class="section-header">
+                <h2>🌱 Crop Management</h2>
+            </div>
+            <div class="section-content">
+                <form id="cropForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="cropName">Crop Name</label>
+                            <input type="text" id="cropName" required placeholder="Select or type crop name" list="cropSuggestions">
+                            <datalist id="cropSuggestions">
+                                <!-- Grains & Cereals -->
+                                <option value="Wheat">Wheat</option>
+                                <option value="Rice">Rice</option>
+                                <option value="Corn (Maize)">Corn (Maize)</option>
+                                <option value="Barley">Barley</option>
+                                <option value="Oats">Oats</option>
+                                <option value="Rye">Rye</option>
+                                <option value="Millet">Millet</option>
+                                <option value="Sorghum">Sorghum</option>
+                                <option value="Quinoa">Quinoa</option>
+                                
+                                <!-- Legumes & Pulses -->
+                                <option value="Soybeans">Soybeans</option>
+                                <option value="Black Beans">Black Beans</option>
+                                <option value="Kidney Beans">Kidney Beans</option>
+                                <option value="Chickpeas">Chickpeas</option>
+                                <option value="Lentils">Lentils</option>
+                                <option value="Peas">Peas</option>
+                                <option value="Peanuts">Peanuts</option>
+                                <option value="Alfalfa">Alfalfa</option>
+                                
+                                <!-- Vegetables -->
+                                <option value="Tomatoes">Tomatoes</option>
+                                <option value="Potatoes">Potatoes</option>
+                                <option value="Sweet Potatoes">Sweet Potatoes</option>
+                                <option value="Onions">Onions</option>
+                                <option value="Carrots">Carrots</option>
+                                <option value="Cabbage">Cabbage</option>
+                                <option value="Lettuce">Lettuce</option>
+                                <option value="Spinach">Spinach</option>
+                                <option value="Broccoli">Broccoli</option>
+                                <option value="Cauliflower">Cauliflower</option>
+                                <option value="Bell Peppers">Bell Peppers</option>
+                                <option value="Cucumbers">Cucumbers</option>
+                                <option value="Zucchini">Zucchini</option>
+                                <option value="Eggplant">Eggplant</option>
+                                <option value="Radishes">Radishes</option>
+                                <option value="Beets">Beets</option>
+                                <option value="Turnips">Turnips</option>
+                                
+                                <!-- Fruits -->
+                                <option value="Apples">Apples</option>
+                                <option value="Oranges">Oranges</option>
+                                <option value="Grapes">Grapes</option>
+                                <option value="Strawberries">Strawberries</option>
+                                <option value="Blueberries">Blueberries</option>
+                                <option value="Raspberries">Raspberries</option>
+                                <option value="Blackberries">Blackberries</option>
+                                <option value="Peaches">Peaches</option>
+                                <option value="Pears">Pears</option>
+                                <option value="Cherries">Cherries</option>
+                                <option value="Plums">Plums</option>
+                                <option value="Watermelon">Watermelon</option>
+                                <option value="Cantaloupe">Cantaloupe</option>
+                                
+                                <!-- Cash Crops -->
+                                <option value="Cotton">Cotton</option>
+                                <option value="Sugarcane">Sugarcane</option>
+                                <option value="Sugar Beets">Sugar Beets</option>
+                                <option value="Sunflowers">Sunflowers</option>
+                                <option value="Canola">Canola</option>
+                                <option value="Flax">Flax</option>
+                                
+                                <!-- Herbs & Spices -->
+                                <option value="Basil">Basil</option>
+                                <option value="Oregano">Oregano</option>
+                                <option value="Thyme">Thyme</option>
+                                <option value="Rosemary">Rosemary</option>
+                                <option value="Cilantro">Cilantro</option>
+                                <option value="Parsley">Parsley</option>
+                                <option value="Mint">Mint</option>
+                                <option value="Sage">Sage</option>
+                                
+                                <!-- Root Crops -->
+                                <option value="Cassava">Cassava</option>
+                                <option value="Yams">Yams</option>
+                                <option value="Ginger">Ginger</option>
+                                <option value="Turmeric">Turmeric</option>
+                                
+                                <!-- Forage Crops -->
+                                <option value="Hay">Hay</option>
+                                <option value="Clover">Clover</option>
+                                <option value="Timothy Grass">Timothy Grass</option>
+                                <option value="Bermuda Grass">Bermuda Grass</option>
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <label for="seedVariety">Seed Variety</label>
+                            <input type="text" id="seedVariety" required placeholder="e.g., Hybrid-123, Organic-456">
+                        </div>
+                        <div class="form-group">
+                            <label for="sowingDate">Sowing Date</label>
+                            <input type="date" id="sowingDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">Quantity (kg)</label>
+                            <input type="number" id="quantity" step="0.1" required placeholder="0.0">
+                        </div>
+                        <div class="form-group">
+                            <label for="fertilizer">Fertilizer Used</label>
+                            <input type="text" id="fertilizer" placeholder="e.g., NPK 10-10-10, Organic compost">
+                        </div>
+                        <div class="form-group">
+                            <label for="harvestDate">Expected/Actual Harvest Date</label>
+                            <input type="date" id="harvestDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cropCondition">Crop Condition</label>
+                        <select id="cropCondition">
+                            <option value="Excellent">🌟 Excellent</option>
+                            <option value="Good">✅ Good</option>
+                            <option value="Fair">⚠️ Fair</option>
+                            <option value="Poor">❌ Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sowingDetails">Additional Sowing Details</label>
+                        <textarea id="sowingDetails" placeholder="Enter details about soil preparation, weather conditions, irrigation methods, pest control measures, etc."></textarea>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn">Add Crop Record</button>
+                        <button type="button" class="btn btn-danger" onclick="clearCropForm()">Clear Form</button>
+                    </div>
+                </form>
+
+                <div id="cropAlert"></div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Crop Name</th>
+                                <th>Seed Variety</th>
+                                <th>Sowing Date</th>
+                                <th>Quantity (kg)</th>
+                                <th>Condition</th>
+                                <th>Harvest Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cropTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Section -->
+        <div id="inventory" class="section">
+            <div class="section-header">
+                <h2>📦 Inventory</h2>
+            </div>
+            <div class="section-content">
+                <!-- Stocked Crops Summary -->
+                <div style="margin-bottom: 40px;">
+                    <h3 style="color: var(--primary-green); font-size: 1.5rem; margin-bottom: 24px; font-weight: 600;">📊 Stocked Crops Summary</h3>
+                    <div class="inventory-summary" id="inventorySummary">
+                        <!-- Inventory cards will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Add New Stock Form -->
+                <h3 style="color: var(--primary-green); font-size: 1.5rem; margin-bottom: 24px; font-weight: 600;">➕ Add New Stock</h3>
+                <form id="stockForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="stockDate">Stock Date</label>
+                            <input type="date" id="stockDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="stockCropType">Crop Type</label>
+                            <input type="text" id="stockCropType" required placeholder="Select or type crop type" list="cropSuggestions">
+                        </div>
+                        <div class="form-group">
+                            <label for="stockQuantity">Quantity (kg)</label>
+                            <input type="number" id="stockQuantity" step="0.1" required placeholder="0.0">
+                        </div>
+                        <div class="form-group">
+                            <label for="stockLocation">Storage Location</label>
+                            <input type="text" id="stockLocation" placeholder="e.g., Warehouse A, Silo 1, Cold Storage">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="stockNotes">Notes</label>
+                        <textarea id="stockNotes" placeholder="Quality grade, storage conditions, expiry dates, special handling instructions..."></textarea>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn">Add Stock Record</button>
+                        <button type="button" class="btn btn-danger" onclick="clearStockForm()">Clear Form</button>
+                    </div>
+                </form>
+
+                <div id="stockAlert"></div>
+
+                <!-- Stock Records Table -->
+                <h3 style="color: var(--primary-green); font-size: 1.5rem; margin: 40px 0 24px 0; font-weight: 600;">📋 All Stock Records</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Crop Type</th>
+                                <th>Quantity (kg)</th>
+                                <th>Location</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Section -->
+        <div id="notifications" class="section">
+            <div class="section-header">
+                <h2>🔔 Notifications</h2>
+            </div>
+            <div class="section-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <div>
+                        <button class="btn btn-small" onclick="markAllAsRead()">Mark All as Read</button>
+                        <button class="btn btn-small btn-danger" onclick="clearAllNotifications()">Clear All</button>
+                    </div>
+                    <div style="color: var(--medium-text); font-size: 0.95rem;">
+                        <span id="unreadCount">0</span> unread notifications
+                    </div>
+                </div>
+
+                <div id="notificationsList">
+                    <!-- Notifications will be dynamically added here -->
+                </div>
+
+                <!-- Add sample notifications button for demo -->
+                <div style="text-align: center; margin-top: 32px; padding: 24px; background: var(--very-light-green); border-radius: 12px;">
+                    <p style="color: var(--medium-text); margin-bottom: 16px;">No notifications yet? Try adding some sample notifications to see how it works:</p>
+                    <button class="btn" onclick="addSampleNotifications()">Add Sample Notifications</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contacts Section -->
+        <div id="contacts" class="section">
+            <div class="section-header">
+                <h2>📞 Contacts</h2>
+            </div>
+            <div class="section-content">
+                <div class="contact-grid">
+                    <!-- Contact Suppliers -->
+                    <div class="contact-section">
+                        <h3>🛒 Contact Suppliers</h3>
+                        <p>Reach out to suppliers to sell your crops, get price quotes, or negotiate bulk deals.</p>
+                        
+                        <form id="supplierContactForm">
+                            <div class="form-group">
+                                <label for="supplierSubject">Subject</label>
+                                <select id="supplierSubject">
+                                    <option value="">Select a subject</option>
+                                    <option value="Crop Sale Inquiry">Crop Sale Inquiry</option>
+                                    <option value="Price Quote Request">Price Quote Request</option>
+                                    <option value="Bulk Order Discussion">Bulk Order Discussion</option>
+                                    <option value="Contract Negotiation">Contract Negotiation</option>
+                                    <option value="Quality Specifications">Quality Specifications</option>
+                                    <option value="Delivery Schedule">Delivery Schedule</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="supplierCropType">Crop Type</label>
+                                <input type="text" id="supplierCropType" placeholder="Which crop are you selling?" list="cropSuggestions">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="supplierQuantity">Available Quantity (kg)</label>
+                                <input type="number" id="supplierQuantity" step="0.1" placeholder="0.0">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="supplierMessage">Message</label>
+                                <textarea id="supplierMessage" placeholder="Describe your crop quality, expected price, delivery timeline, or any specific requirements..."></textarea>
+                            </div>
+                            
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-info">Send to Suppliers</button>
+                                <button type="button" class="btn btn-danger" onclick="clearSupplierContactForm()">Clear</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Contact Agronomists -->
+                    <div class="contact-section">
+                        <h3>🌱 Contact Agronomists</h3>
+                        <p>Get professional advice from agricultural experts on crop management, soil health, and farming techniques.</p>
+                        
+                        <form id="agronomistContactForm">
+                            <div class="form-group">
+                                <label for="agronomistSubject">Subject</label>
+                                <select id="agronomistSubject">
+                                    <option value="">Select a subject</option>
+                                    <option value="Crop Disease Diagnosis">Crop Disease Diagnosis</option>
+                                    <option value="Soil Health Assessment">Soil Health Assessment</option>
+                                    <option value="Fertilizer Recommendation">Fertilizer Recommendation</option>
+                                    <option value="Pest Control Advice">Pest Control Advice</option>
+                                    <option value="Harvest Timing">Harvest Timing</option>
+                                    <option value="Crop Rotation Planning">Crop Rotation Planning</option>
+                                    <option value="Irrigation Management">Irrigation Management</option>
+                                    <option value="General Consultation">General Consultation</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="agronomistCropType">Crop Type</label>
+                                <input type="text" id="agronomistCropType" placeholder="Which crop needs attention?" list="cropSuggestions">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="agronomistUrgency">Urgency Level</label>
+                                <select id="agronomistUrgency">
+                                    <option value="Low">Low - General advice</option>
+                                    <option value="Medium">Medium - Within a week</option>
+                                    <option value="High">High - Within 2-3 days</option>
+                                    <option value="Critical">Critical - Immediate attention needed</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="agronomistMessage">Describe the Issue</label>
+                                <textarea id="agronomistMessage" placeholder="Describe the problem, symptoms, current conditions, or questions you have. Include details about soil type, weather conditions, and any treatments already applied..."></textarea>
+                            </div>
+                            
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-warning">Send to Agronomists</button>
+                                <button type="button" class="btn btn-danger" onclick="clearAgronomistContactForm()">Clear</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="contactAlert"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+    </script>
+</body>
+</html>

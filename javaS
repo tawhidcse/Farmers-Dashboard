@@ -1,0 +1,480 @@
+// Data storage
+        let crops = JSON.parse(localStorage.getItem('farmCrops')) || [];
+        let stock = JSON.parse(localStorage.getItem('farmStock')) || [];
+        let notifications = JSON.parse(localStorage.getItem('farmNotifications')) || [];
+
+        // Navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Update content based on section
+            if (sectionName === 'dashboard') {
+                updateDashboard();
+            } else if (sectionName === 'notifications') {
+                displayNotifications();
+            } else if (sectionName === 'inventory') {
+                displayInventorySummary();
+            }
+        }
+
+        // Dashboard functions
+        function updateDashboard() {
+            document.getElementById('totalCrops').textContent = crops.length;
+            document.getElementById('totalStock').textContent = stock.length;
+            
+            const unreadNotifications = notifications.filter(n => !n.read).length;
+            document.getElementById('totalNotifications').textContent = unreadNotifications;
+            
+            // Show recent activity
+            let recentActivity = 'No recent activity';
+            if (crops.length > 0) {
+                const latestCrop = crops[crops.length - 1];
+                recentActivity = `Latest: ${latestCrop.name} added`;
+            } else if (stock.length > 0) {
+                const latestStock = stock[stock.length - 1];
+                recentActivity = `Latest: ${latestStock.cropType} stocked`;
+            } else if (notifications.length > 0) {
+                const latestNotification = notifications[notifications.length - 1];
+                recentActivity = `Latest: New ${latestNotification.type} notification`;
+            }
+            document.getElementById('recentActivity').textContent = recentActivity;
+            
+            updateNotificationBadge();
+        }
+
+        function updateNotificationBadge() {
+            const unreadCount = notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('notificationBadge');
+            const unreadCountElement = document.getElementById('unreadCount');
+            
+            badge.textContent = unreadCount;
+            badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+            
+            if (unreadCountElement) {
+                unreadCountElement.textContent = unreadCount;
+            }
+        }
+
+        // Inventory functions
+        function displayInventorySummary() {
+            const container = document.getElementById('inventorySummary');
+            container.innerHTML = '';
+            
+            if (stock.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--light-text);">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">📦</div>
+                        <h3>No stock records yet</h3>
+                        <p>Add your first stock entry to see the inventory summary.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group stock by crop type and sum quantities
+            const stockSummary = {};
+            stock.forEach(item => {
+                if (stockSummary[item.cropType]) {
+                    stockSummary[item.cropType].quantity += item.quantity;
+                    stockSummary[item.cropType].locations.add(item.location || 'Not specified');
+                    if (new Date(item.date) < new Date(stockSummary[item.cropType].oldestDate)) {
+                        stockSummary[item.cropType].oldestDate = item.date;
+                    }
+                } else {
+                    stockSummary[item.cropType] = {
+                        quantity: item.quantity,
+                        locations: new Set([item.location || 'Not specified']),
+                        oldestDate: item.date,
+                        entries: 1
+                    };
+                }
+            });
+            
+            // Create cards for each crop type
+            Object.entries(stockSummary).forEach(([cropType, data]) => {
+                const card = document.createElement('div');
+                card.className = 'inventory-card';
+                
+                const locationsList = Array.from(data.locations).join(', ');
+                const daysSinceOldest = Math.floor((new Date() - new Date(data.oldestDate)) / (1000 * 60 * 60 * 24));
+                
+                card.innerHTML = `
+                    <h4>🌾 ${cropType}</h4>
+                    <div class="inventory-details">
+                        <span><strong>Total Quantity:</strong></span>
+                        <span>${data.quantity.toFixed(1)} kg</span>
+                        
+                        <span><strong>Storage Locations:</strong></span>
+                        <span>${locationsList}</span>
+                        
+                        <span><strong>Stock Entries:</strong></span>
+                        <span>${stock.filter(s => s.cropType === cropType).length} records</span>
+                        
+                        <span><strong>Oldest Stock:</strong></span>
+                        <span>${daysSinceOldest} days ago</span>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Notification functions
+        function displayNotifications() {
+            const container = document.getElementById('notificationsList');
+            container.innerHTML = '';
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--light-text);">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">📭</div>
+                        <h3>No notifications yet</h3>
+                        <p>You'll receive notifications from suppliers and agronomists here.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort notifications by date (newest first)
+            const sortedNotifications = [...notifications].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedNotifications.forEach(notification => {
+                const card = document.createElement('div');
+                card.className = `notification-card ${notification.type} ${!notification.read ? 'unread' : ''}`;
+                
+                const typeIcon = notification.type === 'supplier' ? '🛒' : '🌱';
+                const typeLabel = notification.type === 'supplier' ? 'Supplier Request' : 'Agronomist Advice';
+                
+                card.innerHTML = `
+                    <div class="notification-type ${notification.type}">
+                        ${typeIcon} ${typeLabel}
+                    </div>
+                    <div class="notification-title">${notification.title}</div>
+                    <div class="notification-content">${notification.content}</div>
+                    <div class="notification-meta">
+                        <span>From: ${notification.from}</span>
+                        <span>${new Date(notification.date).toLocaleDateString()}</span>
+                    </div>
+                    <div class="notification-actions">
+                        ${!notification.read ? `<button class="btn btn-small" onclick="markAsRead(${notification.id})">Mark as Read</button>` : ''}
+                        <button class="btn btn-small btn-danger" onclick="deleteNotification(${notification.id})">Delete</button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+            
+            updateNotificationBadge();
+        }
+
+        function markAsRead(id) {
+            notifications = notifications.map(n => 
+                n.id === id ? { ...n, read: true } : n
+            );
+            localStorage.setItem('farmNotifications', JSON.stringify(notifications));
+            displayNotifications();
+            updateDashboard();
+        }
+
+        function markAllAsRead() {
+            notifications = notifications.map(n => ({ ...n, read: true }));
+            localStorage.setItem('farmNotifications', JSON.stringify(notifications));
+            displayNotifications();
+            updateDashboard();
+            showAlert('notificationAlert', '✅ All notifications marked as read!', 'success');
+        }
+
+        function deleteNotification(id) {
+            if (confirm('Are you sure you want to delete this notification?')) {
+                notifications = notifications.filter(n => n.id !== id);
+                localStorage.setItem('farmNotifications', JSON.stringify(notifications));
+                displayNotifications();
+                updateDashboard();
+            }
+        }
+
+        function clearAllNotifications() {
+            if (confirm('Are you sure you want to clear all notifications?')) {
+                notifications = [];
+                localStorage.setItem('farmNotifications', JSON.stringify(notifications));
+                displayNotifications();
+                updateDashboard();
+            }
+        }
+
+        function addSampleNotifications() {
+            const sampleNotifications = [
+                {
+                    id: Date.now() + 1,
+                    type: 'supplier',
+                    title: 'Purchase Request for Wheat',
+                    content: 'We are interested in purchasing 500kg of wheat from your farm. Our offered price is $3.50 per kg. Please let us know if you have this quantity available and if the price is acceptable.',
+                    from: 'Green Valley Trading Co.',
+                    date: new Date().toISOString(),
+                    read: false
+                },
+                {
+                    id: Date.now() + 2,
+                    type: 'agronomist',
+                    title: 'Optimal Harvest Time for Tomatoes',
+                    content: 'Based on current weather conditions and your planting date, the optimal harvest time for your tomatoes is approaching. Consider harvesting when fruits are fully colored but still firm. Monitor for pest activity during this critical period.',
+                    from: 'Dr. Sarah Johnson, Agricultural Specialist',
+                    date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+                    read: false
+                },
+                {
+                    id: Date.now() + 3,
+                    type: 'supplier',
+                    title: 'Bulk Order Opportunity - Corn',
+                    content: 'We have a bulk order requirement for 2000kg of corn for our processing facility. We can offer $2.80 per kg for quality grade A corn. Delivery needed within 2 weeks.',
+                    from: 'AgriProcess Industries',
+                    date: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+                    read: false
+                },
+                {
+                    id: Date.now() + 4,
+                    type: 'agronomist',
+                    title: 'Soil Health Recommendation',
+                    content: 'Your recent soil test results show slightly low nitrogen levels. Consider applying organic compost or a balanced NPK fertilizer before your next planting season. This will improve crop yield and soil structure.',
+                    from: 'AgriCare Consulting',
+                    date: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
+                    read: true
+                }
+            ];
+            
+            notifications = [...notifications, ...sampleNotifications];
+            localStorage.setItem('farmNotifications', JSON.stringify(notifications));
+            displayNotifications();
+            updateDashboard();
+            showAlert('contactAlert', '✅ Sample notifications added!', 'success');
+        }
+
+        // Contact form functions
+        document.getElementById('supplierContactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const subject = document.getElementById('supplierSubject').value;
+            const cropType = document.getElementById('supplierCropType').value;
+            const quantity = document.getElementById('supplierQuantity').value;
+            const message = document.getElementById('supplierMessage').value;
+            
+            if (!subject || !message) {
+                showAlert('contactAlert', '❌ Please fill in the subject and message fields.', 'error');
+                return;
+            }
+            
+            // Simulate sending message to suppliers
+            showAlert('contactAlert', '✅ Your message has been sent to suppliers! You will receive responses via notifications.', 'success');
+            clearSupplierContactForm();
+            
+            // Add a simulated response notification after a delay
+            setTimeout(() => {
+                const responseNotification = {
+                    id: Date.now(),
+                    type: 'supplier',
+                    title: `Response to: ${subject}`,
+                    content: `Thank you for your inquiry about ${cropType || 'your crops'}. We are interested and would like to discuss further. Our procurement team will contact you within 24 hours with a detailed offer.`,
+                    from: 'AgriTrade Solutions',
+                    date: new Date().toISOString(),
+                    read: false
+                };
+                
+                notifications.push(responseNotification);
+                localStorage.setItem('farmNotifications', JSON.stringify(notifications));
+                updateNotificationBadge();
+            }, 3000);
+        });
+
+        document.getElementById('agronomistContactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const subject = document.getElementById('agronomistSubject').value;
+            const cropType = document.getElementById('agronomistCropType').value;
+            const urgency = document.getElementById('agronomistUrgency').value;
+            const message = document.getElementById('agronomistMessage').value;
+            
+            if (!subject || !message) {
+                showAlert('contactAlert', '❌ Please fill in the subject and message fields.', 'error');
+                return;
+            }
+            
+            // Simulate sending message to agronomists
+            showAlert('contactAlert', '✅ Your consultation request has been sent to agronomists! You will receive expert advice via notifications.', 'success');
+            clearAgronomistContactForm();
+            
+            // Add a simulated response notification after a delay
+            setTimeout(() => {
+                const responseNotification = {
+                    id: Date.now(),
+                    type: 'agronomist',
+                    title: `Expert Advice: ${subject}`,
+                    content: `Thank you for your consultation request regarding ${cropType || 'your crops'}. Based on your description, I recommend immediate attention to this issue. I'll provide detailed guidance and treatment recommendations. Please expect a comprehensive response within ${urgency === 'Critical' ? '2 hours' : urgency === 'High' ? '24 hours' : '2-3 days'}.`,
+                    from: 'Dr. Michael Chen, Crop Specialist',
+                    date: new Date().toISOString(),
+                    read: false
+                };
+                
+                notifications.push(responseNotification);
+                localStorage.setItem('farmNotifications', JSON.stringify(notifications));
+                updateNotificationBadge();
+            }, 4000);
+        });
+
+        function clearSupplierContactForm() {
+            document.getElementById('supplierContactForm').reset();
+        }
+
+        function clearAgronomistContactForm() {
+            document.getElementById('agronomistContactForm').reset();
+        }
+
+        // Crop Management
+        document.getElementById('cropForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const crop = {
+                id: Date.now(),
+                name: document.getElementById('cropName').value,
+                seedVariety: document.getElementById('seedVariety').value,
+                sowingDate: document.getElementById('sowingDate').value,
+                quantity: parseFloat(document.getElementById('quantity').value),
+                fertilizer: document.getElementById('fertilizer').value,
+                harvestDate: document.getElementById('harvestDate').value,
+                condition: document.getElementById('cropCondition').value,
+                sowingDetails: document.getElementById('sowingDetails').value,
+                dateAdded: new Date().toISOString()
+            };
+            
+            crops.push(crop);
+            localStorage.setItem('farmCrops', JSON.stringify(crops));
+            
+            showAlert('cropAlert', '✅ Crop record added successfully!', 'success');
+            clearCropForm();
+            displayCrops();
+        });
+
+        function clearCropForm() {
+            document.getElementById('cropForm').reset();
+        }
+
+        function displayCrops() {
+            const tbody = document.getElementById('cropTableBody');
+            tbody.innerHTML = '';
+            
+            crops.forEach(crop => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${crop.name}</strong></td>
+                    <td>${crop.seedVariety}</td>
+                    <td>${new Date(crop.sowingDate).toLocaleDateString()}</td>
+                    <td>${crop.quantity.toFixed(1)}</td>
+                    <td>${crop.condition}</td>
+                    <td>${crop.harvestDate ? new Date(crop.harvestDate).toLocaleDateString() : 'Not set'}</td>
+                    <td>
+                        <button class="btn btn-danger btn-small" onclick="deleteCrop(${crop.id})">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        function deleteCrop(id) {
+            if (confirm('Are you sure you want to delete this crop record?')) {
+                crops = crops.filter(crop => crop.id !== id);
+                localStorage.setItem('farmCrops', JSON.stringify(crops));
+                displayCrops();
+                showAlert('cropAlert', '✅ Crop record deleted successfully!', 'success');
+            }
+        }
+
+        // Stock Management
+        document.getElementById('stockForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const stockItem = {
+                id: Date.now(),
+                date: document.getElementById('stockDate').value,
+                cropType: document.getElementById('stockCropType').value,
+                quantity: parseFloat(document.getElementById('stockQuantity').value),
+                location: document.getElementById('stockLocation').value,
+                notes: document.getElementById('stockNotes').value,
+                dateAdded: new Date().toISOString()
+            };
+            
+            stock.push(stockItem);
+            localStorage.setItem('farmStock', JSON.stringify(stock));
+            
+            showAlert('stockAlert', '✅ Stock record added successfully!', 'success');
+            clearStockForm();
+            displayStock();
+            displayInventorySummary();
+        });
+
+        function clearStockForm() {
+            document.getElementById('stockForm').reset();
+        }
+
+        function displayStock() {
+            const tbody = document.getElementById('stockTableBody');
+            tbody.innerHTML = '';
+            
+            stock.forEach(item => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${new Date(item.date).toLocaleDateString()}</td>
+                    <td><strong>${item.cropType}</strong></td>
+                    <td>${item.quantity.toFixed(1)}</td>
+                    <td>${item.location || 'Not specified'}</td>
+                    <td>${item.notes || 'No notes'}</td>
+                    <td>
+                        <button class="btn btn-danger btn-small" onclick="deleteStock(${item.id})">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        function deleteStock(id) {
+            if (confirm('Are you sure you want to delete this stock record?')) {
+                stock = stock.filter(item => item.id !== id);
+                localStorage.setItem('farmStock', JSON.stringify(stock));
+                displayStock();
+                displayInventorySummary();
+                showAlert('stockAlert', '✅ Stock record deleted successfully!', 'success');
+            }
+        }
+
+        // Utility functions
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            
+            container.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 4000);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            displayCrops();
+            displayStock();
+            displayNotifications();
+            displayInventorySummary();
+            updateDashboard();
+        });
